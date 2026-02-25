@@ -152,9 +152,14 @@ const propertyLastEditedTimeValue = (
   defaultFn: () => React.ReactNode
 ) => {
   if (pageHeader && block?.last_edited_time) {
-    return `Last updated ${formatDate(block?.last_edited_time, {
-      month: 'long'
-    })}`
+    return (
+      <span suppressHydrationWarning={true}>
+        Last updated{' '}
+        {formatDate(block?.last_edited_time, {
+          month: 'long'
+        })}
+      </span>
+    )
   }
 
   return defaultFn()
@@ -168,9 +173,13 @@ const propertyDateValue = (
     const publishDate = data?.[0]?.[1]?.[0]?.[1]?.start_date
 
     if (publishDate) {
-      return `${formatDate(publishDate, {
-        month: 'long'
-      })}`
+      return (
+        <span suppressHydrationWarning={true}>
+          {formatDate(publishDate, {
+            month: 'long'
+          })}
+        </span>
+      )
     }
   }
 
@@ -194,8 +203,13 @@ export function NotionPage({
   error,
   pageId
 }: types.PageProps) {
+  const [hasMounted, setHasMounted] = React.useState(false)
   const router = useRouter()
   const lite = useSearchParam('lite')
+
+  React.useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   const components = React.useMemo<Partial<NotionComponents>>(
     () => ({
@@ -216,9 +230,10 @@ export function NotionPage({
   )
 
   // lite mode is for oembed
-  const isLiteMode = lite === 'true'
+  const isLiteMode = hasMounted && lite === 'true'
 
-  const { isDarkMode } = useDarkMode()
+  const { isDarkMode: isDarkModeReal } = useDarkMode()
+  const isDarkMode = hasMounted && isDarkModeReal
 
   const siteMapPageUrl = React.useMemo(() => {
     const params: any = {}
@@ -284,8 +299,8 @@ export function NotionPage({
 
   const socialImage = mapImageUrl(
     getPageProperty<string>('Social Image', block, recordMap) ||
-      (block as PageBlock).format?.page_cover ||
-      config.defaultPageCover,
+    (block as PageBlock).format?.page_cover ||
+    config.defaultPageCover,
     block
   )
 
@@ -305,35 +320,41 @@ export function NotionPage({
         isBlogPost={isBlogPost}
       />
 
-      {isLiteMode && <BodyClassName className='notion-lite' />}
-      {isDarkMode && <BodyClassName className='dark-mode' />}
+      {hasMounted ? (
+        <>
+          {isLiteMode && <BodyClassName className='notion-lite' />}
+          {isDarkMode && <BodyClassName className='dark-mode' />}
 
-      <NotionRenderer
-        bodyClassName={cs(
-          styles.notion,
-          pageId === site.rootNotionPageId && 'index-page'
-        )}
-        darkMode={isDarkMode}
-        components={components}
-        recordMap={recordMap}
-        rootPageId={site.rootNotionPageId}
-        rootDomain={site.domain}
-        fullPage={!isLiteMode}
-        previewImages={!!recordMap.preview_images}
-        showCollectionViewDropdown={false}
-        showTableOfContents={showTableOfContents}
-        minTableOfContentsItems={minTableOfContentsItems}
-        defaultPageIcon={config.defaultPageIcon}
-        defaultPageCover={config.defaultPageCover}
-        defaultPageCoverPosition={config.defaultPageCoverPosition}
-        mapPageUrl={siteMapPageUrl}
-        mapImageUrl={mapImageUrl}
-        searchNotion={config.isSearchEnabled ? searchNotion : undefined}
-        pageAside={pageAside}
-        footer={footer}
-      />
+          <NotionRenderer
+            bodyClassName={cs(
+              styles.notion,
+              pageId === site.rootNotionPageId && 'index-page'
+            )}
+            darkMode={isDarkMode}
+            components={components}
+            recordMap={recordMap}
+            rootPageId={site.rootNotionPageId}
+            rootDomain={site.domain}
+            fullPage={!isLiteMode}
+            previewImages={!!recordMap.preview_images}
+            showCollectionViewDropdown={false}
+            showTableOfContents={showTableOfContents}
+            minTableOfContentsItems={minTableOfContentsItems}
+            defaultPageIcon={config.defaultPageIcon}
+            defaultPageCover={config.defaultPageCover}
+            defaultPageCoverPosition={config.defaultPageCoverPosition}
+            mapPageUrl={siteMapPageUrl}
+            mapImageUrl={mapImageUrl}
+            searchNotion={config.isSearchEnabled ? searchNotion : undefined}
+            pageAside={pageAside}
+            footer={footer}
+          />
 
-      <GitHubShareButton />
+          <GitHubShareButton />
+        </>
+      ) : (
+        <Loading />
+      )}
     </>
   )
 }
