@@ -25,8 +25,11 @@ import {
   fathomId,
   isServer,
   posthogConfig,
-  posthogId
+  posthogId,
+  umamiScriptUrl,
+  umamiWebsiteId
 } from '@/lib/config'
+import Script from 'next/script'
 
 if (!isServer) {
   bootstrap()
@@ -61,5 +64,17 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, [router.events])
 
-  return <Component {...pageProps} />
+  return (
+    <>
+      {umamiWebsiteId && (
+        <Script
+          async
+          src={umamiScriptUrl}
+          data-website-id={umamiWebsiteId}
+          strategy='afterInteractive'
+        />
+      )}
+      <Component {...pageProps} />
+    </>
+  )
 }
