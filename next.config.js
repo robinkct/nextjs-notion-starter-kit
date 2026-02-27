@@ -2,6 +2,9 @@
 // import { fileURLToPath } from 'node:url'
 
 export default {
+  env: {
+    NOTION_PAGE_ID: process.env.NOTION_PAGE_ID
+  },
   staticPageGenerationTimeout: 300,
   images: {
     remotePatterns: [
