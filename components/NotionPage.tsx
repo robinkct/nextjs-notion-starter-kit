@@ -217,13 +217,27 @@ export function NotionPage({
       nextLink: Link,
       Code,
       Collection: (props: any) => {
-        // Notion api does not fetch child blocks for page_content gallery images.
-        // If the gallery_cover is set to page_content or page_content_first, we override it to page_cover.
         if (props.block?.type === 'collection_view') {
           const viewIds = props.block.view_ids
           if (viewIds && viewIds.length > 0) {
+            // When Notion's "show data source titles" is OFF, Notion sets
+            // hide_inline_collection_name: true on the block's format.
+            // react-notion-x reads this as hide_linked_collection_name on the
+            // collectionView format, so we propagate it to all views.
+            const shouldHideTitle =
+              props.block.format?.hide_inline_collection_name === true
+
             viewIds.forEach((viewId: string) => {
               const view = recordMap?.collection_view?.[viewId]?.value as any
+              if (!view) return
+
+              if (shouldHideTitle) {
+                view.format = view.format || {}
+                view.format.hide_linked_collection_name = true
+              }
+
+              // Notion api does not fetch child blocks for page_content gallery images.
+              // If the gallery_cover is set to page_content or page_content_first, we override it to page_cover.
               if (
                 view?.format?.gallery_cover?.type === 'page_content' ||
                 view?.format?.gallery_cover?.type === 'page_content_first' ||
