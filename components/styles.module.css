@@ -93,8 +93,16 @@
   color: #2795e9;
 }
 
-.twitter:hover {
-  color: #2795e9;
+.home:hover {
+  color: #e0265e;
+}
+
+.facebook:hover {
+  color: #1877f2;
+}
+
+.instagram:hover {
+  color: #e1306c;
 }
 
 .mastodon:hover {
@@ -106,7 +114,7 @@
 }
 
 .github:hover {
-  color: #c9510c;
+  color: #8a2be2;
 }
 
 .youtube:hover {
@@ -132,16 +140,18 @@
     flex-direction: column;
   }
 
-  .footer > div {
+  .footer>div {
     margin-top: 1em;
   }
 
   .footer .settings {
     order: 1;
   }
+
   .footer .social {
     order: 2;
   }
+
   .footer .copyright {
     order: 3;
   }
@@ -194,14 +204,17 @@
 }
 
 @keyframes octocat-wave {
+
   0%,
   100% {
     transform: rotate(0);
   }
+
   20%,
   60% {
     transform: rotate(-25deg);
   }
+
   40%,
   80% {
     transform: rotate(10deg);

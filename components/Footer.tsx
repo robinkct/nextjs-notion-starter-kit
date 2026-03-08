@@ -5,7 +5,9 @@ import { GitHubIcon } from '@/lib/icons/github'
 import { LinkedInIcon } from '@/lib/icons/linkedin'
 import { MoonIcon } from '@/lib/icons/moon'
 import { SunIcon } from '@/lib/icons/sun'
-import { TwitterIcon } from '@/lib/icons/twitter'
+import { HomeIcon } from '@/lib/icons/home'
+import { FacebookIcon } from '@/lib/icons/facebook'
+import { InstagramIcon } from '@/lib/icons/instagram'
 import { useDarkMode } from '@/lib/use-dark-mode'
 
 import styles from './styles.module.css'
@@ -48,15 +50,39 @@ export function FooterImpl() {
       </div>
 
       <div className={styles.social}>
-        {config.twitter && (
+        {config.home && (
           <a
-            className={styles.twitter}
-            href={`https://x.com/${config.twitter}`}
-            title={`X @${config.twitter}`}
+            className={styles.home}
+            href={config.home}
+            title={`Home Page`}
             target='_blank'
             rel='noopener noreferrer'
           >
-            <TwitterIcon />
+            <HomeIcon />
+          </a>
+        )}
+
+        {config.facebook && (
+          <a
+            className={styles.facebook}
+            href={`https://www.facebook.com/${config.facebook}`}
+            title={`Facebook @${config.facebook}`}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <FacebookIcon />
+          </a>
+        )}
+
+        {config.instagram && (
+          <a
+            className={styles.instagram}
+            href={`https://www.instagram.com/${config.instagram}`}
+            title={`Instagram @${config.instagram}`}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <InstagramIcon />
           </a>
         )}
 

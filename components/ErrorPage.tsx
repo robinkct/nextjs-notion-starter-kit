@@ -1,4 +1,5 @@
 import { PageHead } from './PageHead'
+import { Footer } from './Footer'
 import styles from './styles.module.css'
 
 export function ErrorPage({ statusCode }: { statusCode: number }) {
@@ -16,6 +17,7 @@ export function ErrorPage({ statusCode }: { statusCode: number }) {
 
           <img src='/error.png' alt='Error' className={styles.errorImage} />
         </main>
+        <Footer />
       </div>
     </>
   )
