@@ -54,7 +54,7 @@ export function FooterImpl() {
           <a
             className={styles.home}
             href={config.home}
-            title={`Home Page`}
+            title={`Blog`}
             target='_blank'
             rel='noopener noreferrer'
           >

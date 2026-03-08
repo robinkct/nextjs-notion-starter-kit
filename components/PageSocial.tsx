@@ -2,6 +2,7 @@ import type * as React from 'react'
 import cs from 'classnames'
 import { FacebookIcon } from '@/lib/icons/facebook'
 import { InstagramIcon } from '@/lib/icons/instagram'
+import { HomeIcon } from '@/lib/icons/home'
 
 import * as config from '@/lib/config'
 
@@ -18,16 +19,8 @@ const socialLinks: SocialLink[] = [
   config.home && {
     name: 'home',
     href: config.home,
-    title: `Home`,
-    icon: (
-      <svg
-        xmlns='http://www.w3.org/2000/svg'
-        fill='currentColor'
-        viewBox='0 0 24 24'
-      >
-        <path d='M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z' />
-      </svg>
-    )
+    title: `Blog`,
+    icon: <HomeIcon />
   },
 
   config.github && {
