@@ -13,6 +13,20 @@ export default async function searchNotion(
 
   const searchParams: types.SearchParams = req.body
 
+  searchParams.filters = {
+    ...(searchParams.filters || {}),
+    isDeletedOnly: false,
+    excludeTemplates: true,
+    isNavigableOnly: false,
+    requireEditPermissions: false,
+    // @ts-ignore
+    ancestors: [],
+    createdBy: [],
+    editedBy: [],
+    lastEditedTime: {},
+    createdTime: {}
+  }
+
   console.log('<<< lambda search-notion', searchParams)
   const results = await search(searchParams)
   console.log('>>> lambda search-notion', results)

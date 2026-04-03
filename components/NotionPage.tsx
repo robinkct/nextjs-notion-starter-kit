@@ -15,7 +15,8 @@ import BodyClassName from 'react-body-classname'
 import {
   type NotionComponents,
   NotionRenderer,
-  useNotionContext
+  useNotionContext,
+  NotionContextProvider
 } from 'react-notion-x'
 import { EmbeddedTweet, TweetNotFound, TweetSkeleton } from 'react-tweet'
 import { useSearchParam } from 'react-use'
@@ -228,44 +229,44 @@ export function NotionPage({
     () => ({
       ...notionRendererComponents,
       Collection: (props: any) => {
-        if (props.block?.type === 'collection_view') {
-          const viewIds = props.block.view_ids
+        console.log(`[DEBUG] Collection wrapper called for block: ${props.block?.id}, type: ${props.block?.type}, pageId: ${pageId}`)
+        if (
+          props.block?.type === 'collection_view' ||
+          props.block?.type === 'collection_view_page' ||
+          props.block?.type === 'collection' ||
+          props.block?.collection_id // fallback just in case
+        ) {
+          const viewIds = props.block.view_ids || []
           if (viewIds && viewIds.length > 0) {
-            // When Notion's "show data source titles" is OFF, Notion sets
-            // hide_inline_collection_name: true on the block's format.
-            // react-notion-x reads this as hide_linked_collection_name on the
-            // collectionView format, so we propagate it to all views.
-            const shouldHideTitle =
-              props.block.format?.hide_inline_collection_name === true
+            const shouldHideTitle = true // ALWAYS hide title as requested
 
-            viewIds.forEach((viewId: string) => {
-              const view = recordMap?.collection_view?.[viewId]?.value as any
-              if (!view) return
+            if (shouldHideTitle) {
+              viewIds.forEach((viewId: string) => {
+                const view = recordMap?.collection_view?.[viewId]?.value as any
+                if (!view) return
 
-              if (shouldHideTitle) {
                 view.format = view.format || {}
                 view.format.hide_linked_collection_name = true
-              }
 
-              // Notion api does not fetch child blocks for page_content gallery images.
-              // If the gallery_cover is set to page_content or page_content_first, we override it to page_cover.
-              if (
-                view?.format?.gallery_cover?.type === 'page_content' ||
-                view?.format?.gallery_cover?.type === 'page_content_first' ||
-                view?.format?.gallery_cover?.type === 'none' ||
-                view?.format?.gallery_cover === undefined
-              ) {
-                if (view && view.format) {
+                // Notion api does not fetch child blocks for page_content gallery images.
+                // If the gallery_cover is set to page_content or page_content_first, we override it to page_cover.
+                if (
+                  view?.format?.gallery_cover?.type === 'page_content' ||
+                  view?.format?.gallery_cover?.type === 'page_content_first' ||
+                  view?.format?.gallery_cover?.type === 'none' ||
+                  view?.format?.gallery_cover === undefined
+                ) {
                   view.format.gallery_cover = { type: 'page_cover' }
                 }
-              }
-            })
+              })
+            }
+            // We removed the blockIds mutation logic here because it was unreliable.
           }
         }
-        return <Collection {...props} />
+        return <Collection {...props} showCollectionViewDropdown={false} />
       }
     }),
-    [recordMap]
+    [recordMap, pageId]
   )
 
   // lite mode is for oembed
@@ -345,6 +346,46 @@ export function NotionPage({
   const socialDescription =
     getPageProperty<string>('Description', block, recordMap) ||
     config.description
+
+  // Custom filtering for the Book page
+  if (recordMap && (pageId === site.rootNotionPageId || (pageId && pageId.replace(/-/g, '') === '314db9568fde8058946edd16cc0e6afc'))) {
+    const collectionIds = Object.keys(recordMap.collection || {})
+    if (collectionIds.length > 0) {
+      const collectionId = collectionIds[0]
+      const collectionVal = recordMap.collection[collectionId]?.value as any
+      const schema = collectionVal?.schema || collectionVal?.value?.schema
+      if (schema) {
+        const tagsPropId = Object.keys(schema).find(k => schema[k].name?.toLowerCase() === 'tags')
+        if (tagsPropId) {
+          const hiddenBlockIds = new Set<string>()
+          Object.values(recordMap.block).forEach((b: any) => {
+            const rowBlock = b?.value?.value || b?.value
+            if (rowBlock) {
+              if (rowBlock.type === 'page' && rowBlock.id !== site.rootNotionPageId && rowBlock.id?.replace(/-/g, '') !== '314db9568fde8058946edd16cc0e6afc') {
+                const tagsPropValue = rowBlock.properties?.[tagsPropId]
+                const tagsStr = tagsPropValue ? JSON.stringify(tagsPropValue).toLowerCase() : ''
+
+                if (!tagsStr.includes('book')) {
+                  hiddenBlockIds.add(rowBlock.id)
+                }
+              }
+            }
+          })
+
+          const queries = recordMap.collection_query?.[collectionId as string]
+          if (queries) {
+            Object.values(queries).forEach((query: any) => {
+              if (query.collection_group_results?.blockIds) {
+                query.collection_group_results.blockIds = query.collection_group_results.blockIds.filter(
+                  (id: string) => !hiddenBlockIds.has(id)
+                )
+              }
+            })
+          }
+        }
+      }
+    }
+  }
 
   return (
     <>

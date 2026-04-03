@@ -24,6 +24,12 @@ export const customMapImageUrl = (url: string | undefined, block: Block, recordM
     return recordMap.signed_urls[block.id]
   }
 
+  // return the pure url for external images if it's already an absolute http link,
+  // to avoid Notion's proxy returning 400 for them.
+  if (url.startsWith('https://') && !url.includes('notion.so') && !url.includes('amazonaws.com')) {
+    return url
+  }
+
   const result = defaultMapImageUrl(url, block)
 
   // check if Notion generated a file.notion.so URL with no access
